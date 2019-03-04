@@ -48,7 +48,11 @@
 #if WINVER <= _WIN32_WINNT_WS03
 #include "win32_winapifamily.h"
 #else
-#include <winapifamily.h>
+	#ifdef NOT_SUPPORT_XP_VERSION
+		#include <winapifamily.h>
+	#else
+		#include "win32_winapifamily.h"
+	#endif
 #endif
 
 #pragma region Desktop Family

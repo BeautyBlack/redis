@@ -671,6 +671,7 @@ int FDAPI_poll(struct pollfd *fds, nfds_t nfds, int timeout) {
 
             nfds_t i;
             for (i = 0; i < nfds; i++) {
+#ifdef NOT_SUPPORT_XP_VERSION
                 if (fds[i].fd == INVALID_SOCKET) {
                     continue;
                 }
@@ -678,6 +679,15 @@ int FDAPI_poll(struct pollfd *fds, nfds_t nfds, int timeout) {
                     errno = EINVAL;
                     return -1;
                 }
+#else
+				if (pollCopy[i].fd == INVALID_SOCKET) {
+					continue;
+				}
+				if (fds[i].fd >= FD_SETSIZE) {
+					errno = EINVAL;
+					return -1;
+				}
+#endif
 
                 if (pollCopy[i].events & POLLIN) FD_SET(pollCopy[i].fd, &readSet);
                 if (pollCopy[i].events & POLLOUT) FD_SET(pollCopy[i].fd, &writeSet);
@@ -1002,6 +1012,7 @@ int FDAPI_fileno(FILE *file) {
 
 int FDAPI_select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout) {
     try {
+#ifdef NOT_SUPPORT_XP_VERSION
         if (readfds != NULL) {
             for (u_int r = 0; r < readfds->fd_count; r++) {
                 readfds->fd_array[r] = RFDMap::getInstance().lookupSocket((RFD) readfds->fd_array[r]);
@@ -1017,6 +1028,7 @@ int FDAPI_select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
                 exceptfds->fd_array[r] = RFDMap::getInstance().lookupSocket((RFD) exceptfds->fd_array[r]);
             }
         }
+#endif
 
         return f_select(nfds, readfds, writefds, exceptfds, timeout);
     } CATCH_AND_REPORT();
