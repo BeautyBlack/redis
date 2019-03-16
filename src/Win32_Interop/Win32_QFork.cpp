@@ -614,31 +614,19 @@ void CreateChildProcess(PROCESS_INFORMATION *pi, DWORD dwCreationFlags = 0) {
     char arguments[_MAX_PATH];
     memset(arguments, 0, _MAX_PATH);
 
-#ifndef _WIN32
 	sprintf_s(arguments,
 		_MAX_PATH,
-		"--%s %llu %lu --%s \"%s\"",
+		"\"%s\" --%s %llu %lu --%s \"%s\"",
+		fileName,
 		cQFork.c_str(),
 		(uint64_t)g_hQForkControlFileMap,
 		GetCurrentProcessId(),
 		cLogfile.c_str(),
 		getLogFilename());
-#else
-    sprintf_s(arguments,
-              _MAX_PATH,
-              "\"%s\" --%s %llu %lu --%s \"%s\"",
-              fileName,
-              cQFork.c_str(),
-              (uint64_t) g_hQForkControlFileMap,
-              GetCurrentProcessId(),
-              cLogfile.c_str(),
-              getLogFilename());
-#endif
 
-	si.wShowWindow = SW_SHOWNORMAL;
-    IFFAILTHROW(CreateProcessA(fileName, arguments, NULL, NULL, TRUE, dwCreationFlags| CREATE_NEW_CONSOLE, NULL, NULL, &si, pi),
-                "Problem creating slave process");
-    g_hForkedProcess = pi->hProcess;
+	IFFAILTHROW(CreateProcessA(fileName, arguments, NULL, NULL, TRUE, dwCreationFlags, NULL, NULL, &si, pi),
+		"Problem creating slave process");
+	g_hForkedProcess = pi->hProcess;
 }
 
 typedef void (*CHILD_PID_HOOK)(DWORD pid);
@@ -1175,8 +1163,6 @@ extern "C"
     // Redis will allocate.
     int main(int argc, char* argv[]) {
         try {
-			for (int ii = 0; ii < 30; ii++)
-				Sleep(1000);
             InitTimeFunctions();
             ParseCommandLineArguments(argc, argv);
             SetupQForkGlobals(argc, argv);

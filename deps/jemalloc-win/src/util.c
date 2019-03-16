@@ -52,7 +52,12 @@ wrtmessage(void *cbopaque, const char *s)
 	 */
 	UNUSED int result = syscall(SYS_write, STDERR_FILENO, s, strlen(s));
 #else
+#ifndef USE_JIAQI
+	// 调用不了 write, 造成bgsave崩溃
+	// UNUSED int result = write(STDERR_FILENO, s, strlen(s));
+#else
 	UNUSED int result = write(STDERR_FILENO, s, strlen(s));
+#endif
 #endif
 }
 
