@@ -597,7 +597,18 @@ void ParseCommandLineArguments(int argc, char** argv) {
     string confFilePath;
     for (int n = (confFile ? 2 : 1); n < argc; n++) {
         if (string(argv[n]).substr(0, 2) == "--") {
-            string argument = string(argv[n]).substr(2, argument.length() - 2);
+#ifdef NOT_SUPPORT_XP_VERSION
+			string argument = string(argv[n]).substr(2, argument.length() - 2);
+#else
+			// Param @argument 可能会导致语义问题, 如果 @argument比 string(argv[n])早创建，则 argument.length()将是0值
+			// argv[n] + 2 意义为越过参数语法 “--”这两个符号
+			// @argument's length may be 0, substr method may return an empty string. 
+			// this usage may accur an unexpected situation about when @argument is created.
+			// Or if @argument is created before string(argv[n]) or @argument is undefine when substr is being call ,
+			// Just avoid coding like this style.
+			string argument = string(argv[n] + 2);
+#endif
+			
             transform(argument.begin(), argument.end(), argument.begin(), ::tolower);
 
             // Some -- arguments are passed directly to redis.c::main()
@@ -610,7 +621,7 @@ void ParseCommandLineArguments(int argc, char** argv) {
                 // -- arguments processed before calling redis.c::main()
                 if (g_redisArgMap.find(argument) == g_redisArgMap.end()) {
                     stringstream err;
-                    err << "unknown argument: " << argument;
+                    err << "unknown argument: " << argument << ", argument Length: " << argument.length();
                     throw invalid_argument(err.str());
                 }
 

@@ -52,11 +52,15 @@ wrtmessage(void *cbopaque, const char *s)
 	 */
 	UNUSED int result = syscall(SYS_write, STDERR_FILENO, s, strlen(s));
 #else
-#ifndef USE_JIAQI
-	// 调用不了 write, 造成bgsave崩溃
-	// UNUSED int result = write(STDERR_FILENO, s, strlen(s));
-#else
+#ifdef NOT_SUPPORT_XP_VERSION
 	UNUSED int result = write(STDERR_FILENO, s, strlen(s));
+#else
+	// 调用不了 write, 造成bgsave崩溃
+	// write函数指针已经重定向到 Win32_Interop::Win32_FDAPI::FDAPI_write函数, 但是调用时会出错,暂时没有时间继续研究
+	// Can not call @write method, this action may cause an exception
+	// @write method has beed point to @Win32_Interop::Win32_FDAPI::FDAPI_write [see class Win32_FDAPI::Win32_FDSockMap], 
+	// But when @write is call, exception occur. No idea now.[Even set Win32_Interop project property to multi-byte set, exception still happen.]
+	// UNUSED int result = write(STDERR_FILENO, s, strlen(s));
 #endif
 #endif
 }

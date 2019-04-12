@@ -623,7 +623,7 @@ void CreateChildProcess(PROCESS_INFORMATION *pi, DWORD dwCreationFlags = 0) {
 		GetCurrentProcessId(),
 		cLogfile.c_str(),
 		getLogFilename());
-
+	
 	IFFAILTHROW(CreateProcessA(fileName, arguments, NULL, NULL, TRUE, dwCreationFlags, NULL, NULL, &si, pi),
 		"Problem creating slave process");
 	g_hForkedProcess = pi->hProcess;
